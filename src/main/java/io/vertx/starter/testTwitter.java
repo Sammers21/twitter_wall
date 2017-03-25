@@ -1,5 +1,4 @@
 package io.vertx.starter;
-
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 

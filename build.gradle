@@ -4,7 +4,7 @@ plugins {
 }
 
 repositories {
-  jcenter()
+  mavenCentral()
 }
 
 version = '0.1'
@@ -18,7 +18,8 @@ def doOnChange = './gradlew classes'
 
 dependencies {
   compile "io.vertx:vertx-core:$vertxVersion"
-  compile "org.twitter4j:twitter4j:4.0.6"
+  // https://mvnrepository.com/artifact/org.twitter4j/twitter4j-core
+  compile group: 'org.twitter4j', name: 'twitter4j-core', version: '4.0.6'
   testCompile "junit:junit:4.12"
   testCompile "io.vertx:vertx-unit:$vertxVersion"
 }
@@ -34,8 +35,10 @@ shadowJar {
 }
 
 run {
-  args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+  args = ['run', mainVerticleName ]
 }
+
+
 
 task wrapper(type: Wrapper) {
   gradleVersion = '3.1'
