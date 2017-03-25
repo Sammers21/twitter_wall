@@ -1,0 +1,34 @@
+<html>
+<head>
+  <title>Distributed Chat Service</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- vertx evenbus-->
+  <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+  <script src="vertx-eventbus.js"></script>
+
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript" src="pnotify.custom.min.js"></script>
+  <link href="pnotify.custom.min.css" media="all" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+
+<script type="text/javascript">
+  PNotify.prototype.options.styling = "jqueryui";
+
+  var eb = new EventBus("/eventbus/");
+  eb.onopen = function () {
+    eb.registerHandler("webpage", function (err, msg) {
+      const index = msg.body.indexOf(" ");
+      $(function () {
+        new PNotify({
+          title: msg.body.substring(0, index),
+          text: msg.body.substring(index, msg.body.length)
+        });
+      });
+    });
+  };
+
+</script>
+</body>
+</html>
