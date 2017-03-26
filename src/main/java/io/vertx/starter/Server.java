@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import io.vertx.ext.web.Router;
 
-public class s1 extends AbstractVerticle {
+public class Server extends AbstractVerticle {
 
   private final int pSize = 100;
 
