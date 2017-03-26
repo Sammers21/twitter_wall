@@ -9,7 +9,7 @@ $ git clone https://github.com/Sammers21/twitter_wall
 **2. enter**
 
 ```
-cd twitter_wall
+$ cd twitter_wall
 ```
 **3. run it**
 
