@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Sammers21/twitter_wall.svg?branch=master)](https://travis-ci.org/Sammers21/twitter_wall)
+
 ## How to run it?
 
 **1. clone it**
