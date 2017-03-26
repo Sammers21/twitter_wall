@@ -1,8 +1,8 @@
 package io.vertx.starter;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
@@ -10,21 +10,16 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
-import java.text.DateFormat;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import io.vertx.ext.web.Router;
 
 public class Server extends AbstractVerticle {
 
   private final int pSize = 100;
 
   //tweet storage
-  private BlockingQueue<String> queue = new LinkedBlockingQueue<String>(pSize);
+  private final BlockingQueue<String> queue = new LinkedBlockingQueue<>(pSize);
 
   @Override
   public void start() throws Exception {
