@@ -23,6 +23,7 @@ public class Server extends AbstractVerticle {
 
   private final int pSize = 100;
 
+  //tweet storage
   private BlockingQueue<String> queue = new LinkedBlockingQueue<String>(pSize);
 
   @Override
@@ -30,6 +31,7 @@ public class Server extends AbstractVerticle {
 
     EventBus eb = vertx.eventBus();
 
+    //SockJS bridge
     Router router = Router.router(vertx);
     BridgeOptions opts = new BridgeOptions()
       .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
@@ -44,12 +46,13 @@ public class Server extends AbstractVerticle {
     // Start the web server and tell it to use the router to handle requests.
     vertx.createHttpServer().requestHandler(router::accept).listen(8080);
 
+
     configTwitterSource("#Dota2");
 
 
+    //sending into event bus tweets
     vertx.setPeriodic(1000, v -> {
       String tweet = getTweet();
-      eb.publish("twitter dota", tweet);
       eb.publish("webpage", tweet);
       System.out.println("sended: " + tweet);
 
@@ -59,7 +62,9 @@ public class Server extends AbstractVerticle {
 
 
   private void configTwitterSource(String queryToSearch) {
+
     ConfigurationBuilder cb = new ConfigurationBuilder();
+    //twitter credentials
     cb.setDebugEnabled(true)
       .setOAuthConsumerKey("DX6ptkrAXL8iZv92IBNurhmm9")
       .setOAuthConsumerSecret("J1o1oTK5muKoDLYOw26Awcd0krZhjGaVFaC0ioKIpSoaoxyI2L")
@@ -67,6 +72,7 @@ public class Server extends AbstractVerticle {
       .setOAuthAccessTokenSecret("15TjyJsBNMmHdQaxCUfyfa3JxdFMVp6ui2klgxOUtLJQP");
 
 
+    //start queue filling
     Thread thread = new Thread(() -> {
       Twitter twitter = new TwitterFactory(cb.build()).getInstance();
       try {
@@ -77,7 +83,7 @@ public class Server extends AbstractVerticle {
             result = twitter.search(query);
             List<Status> tweets = result.getTweets();
             for (Status tweet : tweets) {
-              //  System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+              //block before the moment when queue is full
               queue.put("@" + tweet.getUser().getScreenName() + " " + tweet.getText());
             }
           } while ((query = result.nextQuery()) != null);
