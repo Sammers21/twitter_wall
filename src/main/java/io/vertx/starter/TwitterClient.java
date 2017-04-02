@@ -134,12 +134,9 @@ public class TwitterClient extends AbstractVerticle {
 
     private String base64encode() {
         String BearerTokenCredentials = null;
-        try {
-            BearerTokenCredentials = URLEncoder.encode( ConsumerKey,"UTF-8")
-                    + ":" + URLEncoder.encode(ConsumerSecret,"UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        BearerTokenCredentials = ConsumerKey
+                + ":" + ConsumerSecret;
+
         return new String(Base64.getEncoder().encode(BearerTokenCredentials.getBytes()));
     }
 
