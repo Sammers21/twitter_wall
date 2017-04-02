@@ -6,9 +6,13 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -31,6 +35,12 @@ public class TwitterClient extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
+        Router router = Router.router(vertx);
+        BridgeOptions opts = new BridgeOptions()
+                .addInboundPermitted(new PermittedOptions().setAddress("to.twitter.client"));
+        SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
+
+        router.route("/eventbus/*").handler(ebHandler);
 
         WebClient wclient = WebClient.create(vertx,
                 new WebClientOptions()
@@ -57,6 +67,7 @@ public class TwitterClient extends AbstractVerticle {
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
                 query = split[1];
+                eventBus.publish("consumer.force.clean.queue", "clean queue please");
             }
         });
 
