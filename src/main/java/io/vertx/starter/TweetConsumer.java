@@ -33,7 +33,8 @@ public class TweetConsumer extends AbstractVerticle {
         //SockJS bridge
         Router router = Router.router(vertx);
         BridgeOptions opts = new BridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"));
+                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"))
+                .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
         router.route("/eventbus/*").handler(ebHandler);
 
