@@ -14,21 +14,21 @@ public class Server extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
-        /*vertx.setTimer(1000, h -> {
+        vertx.setTimer(1000, h -> {
             deploy(TwitterClient.class.getCanonicalName());
         });
         vertx.setTimer(2000, h -> {
             deploy(TweetConsumer.class.getCanonicalName());
-        });*/
+        });
 
         EventBus eb = vertx.eventBus();
 
         //SockJS bridge
         Router router = Router.router(vertx);
 
-        PermittedOptions optclient = new PermittedOptions().setAddress("to.twitter.client");
+        PermittedOptions optclient = new PermittedOptions().setAddress("to.twitter.client.proxy");
         optclient.setRequiredAuthority(null);
-        PermittedOptions optdelay = new PermittedOptions().setAddress("to.consumer.delay");
+        PermittedOptions optdelay = new PermittedOptions().setAddress("to.consumer.delay.proxy");
         optdelay.setRequiredAuthority(null);
         BridgeOptions opts = new BridgeOptions()
                 .addInboundPermitted(optdelay)
