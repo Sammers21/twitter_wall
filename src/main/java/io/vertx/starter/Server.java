@@ -14,6 +14,7 @@ public class Server extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
+        //deploy consumer and client Vertices
         deploy(TwitterClient.class.getCanonicalName());
         deploy(TweetConsumer.class.getCanonicalName());
 
@@ -22,13 +23,9 @@ public class Server extends AbstractVerticle {
 
         //SockJS bridge
         Router router = Router.router(vertx);
-        PermittedOptions optclient = new PermittedOptions().setAddress("to.twitter.client");
-        optclient.setRequiredAuthority(null);
-        PermittedOptions optdelay = new PermittedOptions().setAddress("to.consumer.delay");
-        optdelay.setRequiredAuthority(null);
         BridgeOptions opts = new BridgeOptions()
-                .addInboundPermitted(optdelay)
-                .addInboundPermitted(optclient)
+                .addInboundPermitted(new PermittedOptions().setAddress("to.twitter.client"))
+                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"))
                 .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
 
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
