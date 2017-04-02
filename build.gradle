@@ -18,11 +18,8 @@ def doOnChange = './gradlew classes'
 
 dependencies {
   compile "io.vertx:vertx-core:$vertxVersion"
-  // https://mvnrepository.com/artifact/org.twitter4j/twitter4j-core
-  compile group: 'org.twitter4j', name: 'twitter4j-core', version: '4.0.6'
-
   compile 'io.vertx:vertx-web:3.4.1'
-
+  compile 'io.vertx:vertx-web-client:3.4.1'
   testCompile "junit:junit:4.12"
   testCompile "io.vertx:vertx-unit:$vertxVersion"
 }
