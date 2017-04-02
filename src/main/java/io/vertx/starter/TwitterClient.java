@@ -36,8 +36,6 @@ public class TwitterClient extends AbstractVerticle {
 
     private AtomicInteger reqCount = new AtomicInteger(450);
 
-    //last tie of reqCount refreshment
-    private AtomicLong rateLimitReset = new AtomicLong(System.currentTimeMillis() + 1000 * 15 * 60);
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -97,7 +95,6 @@ public class TwitterClient extends AbstractVerticle {
                         //send to consumer tweets
                         if (response.statusCode() == 200) {
                             MultiMap headers = response.headers();
-                            rateLimitReset.set(Long.parseLong(headers.get("x-rate-limit-reset")));
                             reqCount.set(Integer.parseInt(headers.get("x-rate-limit-remaining")));
                             System.out.println("getted ");
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
@@ -151,8 +148,6 @@ public class TwitterClient extends AbstractVerticle {
 
     private void reqInfo() {
         System.out.println("requests remained " + reqCount.get());
-        System.out.println("Seconds to wait before refresh " +
-                ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
     }
 
     private boolean ableToRequest() {
@@ -161,8 +156,7 @@ public class TwitterClient extends AbstractVerticle {
             vertx.eventBus()
                     .publish("webpage",
                             "notice " +
-                                    "Seconds to wait before refresh " +
-                                    ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
+                                    "wait for refresh");
         }
         return b;
     }
