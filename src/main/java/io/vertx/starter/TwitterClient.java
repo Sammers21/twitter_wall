@@ -30,7 +30,7 @@ public class TwitterClient extends AbstractVerticle {
     private String query = "#love";
 
     //to prevent big amount of unexpected requests to API
-    private Semaphore semaphore = new Semaphore(2);
+    private Semaphore semaphore = new Semaphore(10);
 
 
     private AtomicInteger reqCount = new AtomicInteger(450);
