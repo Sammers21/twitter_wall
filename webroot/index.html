@@ -6,7 +6,7 @@
 
     <!-- vertx eventbus + sockJS-->
     <script src="jquery-1.11.2.min.js"></script>
-    <script src="sockjs-0.3.min.js"></script>
+    <script src="sockjs.min.js"></script>
     <script src="vertx-eventbus.js"></script>
 
     <!--notification lib-->
@@ -16,7 +16,7 @@
 <body>
 
 <script type="text/javascript">
-    var eb = new EventBus("http://localhost:8080/eventbus");
+    var eb = new EventBus("/eventbus/");
     eb.onopen = function () {
         eb.registerHandler("webpage", function (err, msg) {
             //index of first space between twitter nickname and body text
@@ -65,10 +65,12 @@
 </script>
 
 
-<p>Enter search query: </p>
-<input id="input" type="text" onkeydown="sendQeury(event)">
+<form>
+    <p>Enter search query: </p>
+    <input id="input" type="text" onkeydown="sendQeury(event)">
 
-<p>Enter delay in seconds between twitts appearance : </p>
-<label for="input2">label2</label><input id="input2" type="text" onkeydown="sendDelay(event)">
+    <p>Enter delay in seconds between twitts appearance : </p>
+    <input id="input2" type="text" onkeydown="sendDelay(event)">
+</form>
 </body>
 </html>
