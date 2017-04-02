@@ -15,7 +15,7 @@ public class Server extends AbstractVerticle {
     public void start() throws Exception {
 
         deploy(TwitterClient.class.getCanonicalName());
-        deploy(MessageConsumer.class.getCanonicalName());
+        deploy(TweetConsumer.class.getCanonicalName());
 
         EventBus eb = vertx.eventBus();
 
