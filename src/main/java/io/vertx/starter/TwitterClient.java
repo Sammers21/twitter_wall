@@ -65,11 +65,12 @@ public class TwitterClient extends AbstractVerticle {
         eventBus.consumer("to.twitter.client", h -> {
             String[] split = h.body().toString().split(" ");
 
+            if(!(ableToRequest()
+                    && !btoken.equals(""))){
+                return;
+            }
             //if consumer ask for some tweets
-            if (split[0].equals("provide")
-                    && ableToRequest()
-                    && !btoken.equals("")
-                    && semaphore.tryAcquire()) {
+            if (split[0].equals("provide") && semaphore.tryAcquire()) {
                 provideToConsumer(wclient, eventBus);
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
