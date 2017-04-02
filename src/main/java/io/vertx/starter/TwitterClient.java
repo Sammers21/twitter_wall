@@ -29,8 +29,8 @@ public class TwitterClient extends AbstractVerticle {
     //start query to search
     private String query = "#love";
 
-    //to prevent big amount of unexpected requests
-    private Semaphore semaphore = new Semaphore(1);
+    //to prevent big amount of unexpected requests to API
+    private Semaphore semaphore = new Semaphore(2);
 
 
     private AtomicInteger reqCount = new AtomicInteger(450);

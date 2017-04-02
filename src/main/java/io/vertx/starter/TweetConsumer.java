@@ -50,7 +50,7 @@ public class TweetConsumer extends AbstractVerticle {
             System.out.println("to.consumer.delay message " + h.body().toString());
             int i = Integer.parseInt(h.body().toString());
             if (i > 0) {
-                delay.set(i * 1000);
+                delay.set(i);
 
                 //update timer's delay
                 vertx.cancelTimer(timerId.get());
