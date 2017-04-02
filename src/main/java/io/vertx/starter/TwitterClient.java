@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterClient extends AbstractVerticle {
 
-    //Note: replace this keys by your ones
+    //#TODO: replace this keys with yours
     private String ConsumerKey = "DX6ptkrAXL8iZv92IBNurhmm9";
     private String ConsumerSecret = "J1o1oTK5muKoDLYOw26Awcd0krZhjGaVFaC0ioKIpSoaoxyI2L";
 
@@ -34,6 +34,7 @@ public class TwitterClient extends AbstractVerticle {
 
     //to prevent big amount of unexpected requests
     private Semaphore semaphore = new Semaphore(1);
+
 
     private AtomicInteger reqCount = new AtomicInteger(480);
 
@@ -52,7 +53,7 @@ public class TwitterClient extends AbstractVerticle {
         );
 
         //for token refreshment
-        vertx.setPeriodic(1000, h -> {
+        vertx.setPeriodic(5000, h -> {
             if (btoken == null || btoken.equals("")) {
                 make_auth(wclient);
             }
