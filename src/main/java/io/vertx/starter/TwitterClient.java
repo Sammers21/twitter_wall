@@ -36,7 +36,7 @@ public class TwitterClient extends AbstractVerticle {
     private AtomicInteger reqCount = new AtomicInteger(450);
 
     //last tie of reqCount refreshment
-    private AtomicLong rateLimitReset = new AtomicLong(System.currentTimeMillis());
+    private AtomicLong rateLimitReset = new AtomicLong(System.currentTimeMillis() / 1000 + 15 * 60);
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
