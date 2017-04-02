@@ -45,7 +45,7 @@
         if (event.keyCode === 13 || event.which === 13) {
             var message = $('#input').val();
             if (message.length > 0) {
-                eb.publish("server", "query " + message);
+                eb.publish("to.twitter.client", "query " + message);
                 $('#input').val("");
             }
         }
@@ -56,7 +56,7 @@
         if (event.keyCode === 13 || event.which === 13) {
             var message = $('#input2').val();
             if (message.length > 0) {
-                eb.publish("server", "delay " + message);
+                eb.publish("to.consumer.delay", message);
                 $('#input2').val("");
             }
         }
