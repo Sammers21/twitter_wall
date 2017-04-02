@@ -31,7 +31,7 @@ public class TwitterClient extends AbstractVerticle {
     private String query = "#love";
 
     //to prevent big amount of unexpected requests to API
-    private Semaphore semaphore = new Semaphore(10);
+    private Semaphore semaphore = new Semaphore(1);
 
 
     private AtomicInteger reqCount = new AtomicInteger(450);
@@ -94,6 +94,7 @@ public class TwitterClient extends AbstractVerticle {
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
                             //force token to refresh
+                            System.out.println("body is " + response.body());
                             btoken = null;
                         }
                     } else {
@@ -151,7 +152,6 @@ public class TwitterClient extends AbstractVerticle {
                             "notice " +
                                     "Seconds to wait before refresh " +
                                     ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
-
         }
         return b;
     }
