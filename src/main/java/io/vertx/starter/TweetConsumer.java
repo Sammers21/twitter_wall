@@ -35,14 +35,22 @@ public class TweetConsumer extends AbstractVerticle {
         BridgeOptions opts = new BridgeOptions()
                 .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"));
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
-
         router.route("/eventbus/*").handler(ebHandler);
 
+        //channel to receive Tweets in JSON
         eventBus.consumer("to.consumer.JSON", h -> {
             JsonObject jsonObject = (JsonObject) h.body();
             publishMessagesIntoQueue(jsonObject);
         });
 
+        //if client would like co change query to search he force Consumer to clean
+        //all old tweets
+        eventBus.consumer("consumer.force.clean.queue", h -> {
+            System.out.println("cleanup");
+            q.clear();
+        });
+
+        //channel for delay resetting
         eventBus.consumer("to.consumer.delay", h -> {
             System.out.println("to.consumer.delay message " + h.body().toString());
             int i = Integer.parseInt(h.body().toString());
@@ -67,8 +75,9 @@ public class TweetConsumer extends AbstractVerticle {
             if (q.size() < 5) {
                 eventBus.publish("to.twitter.client", "provide tweets");
             } else {
-                System.out.println(" sended:" + q.peek());
-                eventBus.publish("webpage", q.poll());
+                String poll = q.poll();
+                System.out.println(" sended:" + poll);
+                eventBus.publish("webpage", poll);
             }
         }));
     }
