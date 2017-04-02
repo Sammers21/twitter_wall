@@ -65,7 +65,8 @@ public class TwitterClient extends AbstractVerticle {
             //if consumer ask for some tweets
             if (split[0].equals("provide")
                     && semaphore.tryAcquire()
-                    && ableToRequest()) {
+                    && ableToRequest()
+                    && !btoken.equals("")) {
                 provideToConsumer(wclient, eventBus);
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
@@ -95,7 +96,6 @@ public class TwitterClient extends AbstractVerticle {
                         } else {
                             //force token to refresh
                             System.out.println("body is " + response.body());
-                            btoken = null;
                         }
                     } else {
                         ar.cause().printStackTrace();
@@ -133,7 +133,8 @@ public class TwitterClient extends AbstractVerticle {
 
 
     private String base64encode() {
-        String BearerTokenCredentials = null;
+        String BearerTokenCredentials;
+        ;
         BearerTokenCredentials = ConsumerKey
                 + ":" + ConsumerSecret;
 
