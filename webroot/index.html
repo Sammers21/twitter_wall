@@ -24,7 +24,15 @@
             const index = msg.body.indexOf(" ");
             if (msg.body.substring(0, index) === "error") {
                 //alert error
-                alert(msg.body.substring(index, msg.body.length));
+                $(function () {
+                    new PNotify(
+                        {
+                            title: "Error",
+                            //body of error
+                            text: msg.body.substring(index, msg.body.length),
+                            type: 'error'
+                        });
+                });
             }
             else {
                 $(function () {
@@ -34,6 +42,7 @@
                             title: msg.body.substring(0, index),
                             //body of post
                             text: msg.body.substring(index, msg.body.length)
+                            type: 'info'
                         });
                 });
             }

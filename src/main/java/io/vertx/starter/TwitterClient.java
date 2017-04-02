@@ -78,6 +78,7 @@ public class TwitterClient extends AbstractVerticle {
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
                 query = split[1];
+                System.out.println("new query is " + query);
                 eventBus.publish("consumer.force.clean.queue", "clean queue please");
             }
         });
