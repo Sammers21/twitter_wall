@@ -22,6 +22,7 @@ import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends AbstractVerticle {
 
@@ -33,12 +34,15 @@ public class Server extends AbstractVerticle {
     //tweet storage
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<>(pSize);
 
+    //for one by one requests
+    private Semaphore semaphore = new Semaphore(1);
+
     private String btoken;
 
     //start query to search
     private String query = "#love";
 
-    private int delay = 1000;
+    private AtomicInteger delay = new AtomicInteger(5000);
 
     @Override
     public void start() throws Exception {
@@ -48,6 +52,7 @@ public class Server extends AbstractVerticle {
         //SockJS bridge
         Router router = Router.router(vertx);
         BridgeOptions opts = new BridgeOptions()
+                .addInboundPermitted(new PermittedOptions().setAddress("server"))
                 .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
 
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
@@ -60,22 +65,65 @@ public class Server extends AbstractVerticle {
         // Start the web server and tell it to use the router to handle requests.
         vertx.createHttpServer().requestHandler(router::accept).listen(8080);
 
+        configTwitterSource();
 
-        configTwitterSource("#Dota2");
+        //dynamic periodic event
+        Runnable r = () -> {
+            while (true) {
+                try {
+                    Thread.sleep(delay.get());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                String tweet = getTweet();
+                //sending into event bus tweets
+                eb.publish("webpage", tweet);
+                System.out.println("sended: " + tweet);
+            }
+        };
+        new Thread(r).start();
 
 
-        //sending into event bus tweets
-        vertx.setPeriodic(delay, v -> {
-            String tweet = getTweet();
-            eb.publish("webpage", tweet);
-            System.out.println("sended: " + tweet);
+        eb.consumer("server").handler(message -> {
+            // Send the message back out to all clients with the timestamp prepended.
+            System.out.println("message is: "+message.body());
+
+            String[] split = message.body().toString().split(" ");
+
+            //determine message type
+            if (split[0].equals("query")) {
+                query = split[1];
+                changeQuery();
+            }
+
+            if (split[0].equals("delay")) {
+                int i = Integer.parseInt(split[1]);
+                if (i > 0) {
+                    delay.set(i * 1000);
+                } else {
+                    //alert wrong delay input
+                    eb.publish("webpage", "error delay should be positive integer greater then 0");
+                }
+            }
 
         });
 
     }
 
+    private void changeQuery() {
+        try {
+            semaphore.acquire();
+            //clear old queries
+            queue.clear();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            semaphore.release();
+        }
+    }
 
-    private void configTwitterSource(String queryToSearch) throws InterruptedException {
+
+    private void configTwitterSource() throws InterruptedException {
 
 
         WebClient wclient = WebClient.create(vertx,
@@ -87,7 +135,6 @@ public class Server extends AbstractVerticle {
 
         String BearerTokenCredentials = ConsumerKey + ":" + ConsumerSecret;
         String base64ebtc = base64encode(BearerTokenCredentials);
-        Semaphore semaphore = new Semaphore(1);
 
         semaphore.acquire();
         Buffer buffer = Buffer.buffer("grant_type=client_credentials");
@@ -114,19 +161,19 @@ public class Server extends AbstractVerticle {
             try {
                 while (true) {
                     if (queue.size() > 6) {
-                        Thread.sleep(delay);
+                        Thread.sleep(delay.get());
                         continue;
                     }
                     semaphore.acquire();
-                    String queryy = queryToSerch();
+                    String eq = encodedQuery();
                     wclient
-                            .get(443, "api.twitter.com", "/1.1/search/tweets.json" + queryy)
+                            .get(443, "api.twitter.com", "/1.1/search/tweets.json" + eq)
                             .putHeader("Authorization", "Bearer " + btoken)
                             .send(ar -> {
                                 if (ar.succeeded()) {
                                     HttpResponse<Buffer> response = ar.result();
                                     System.out.println("Got HTTP response with status " + response.statusCode());
-                                    print_in_nice(response.bodyAsJsonObject());
+                                    publishMessagesIntoQueue(response.bodyAsJsonObject());
                                 } else {
                                     ar.cause().printStackTrace();
                                 }
@@ -142,24 +189,26 @@ public class Server extends AbstractVerticle {
         thread.start();
     }
 
-    private String queryToSerch() {
+    private String encodedQuery() {
         String q = null;
         try {
             q = "?q=" + URLEncoder.encode(query, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+            System.out.println("encode error");
             e.printStackTrace();
         }
         return q;
     }
 
-    private void print_in_nice(JsonObject entries) {
+    private void publishMessagesIntoQueue(JsonObject entries) {
         JsonArray statuses = entries.getJsonArray("statuses");
+
         int size = statuses.size();
         for (int i = 0; i < size; i++) {
+
             String name = "@" + statuses.getJsonObject(i).getJsonObject("user").getString("screen_name");
             String text = statuses.getJsonObject(i).getString("text");
-            System.out.println("name " + name);
-            System.out.println("body " + text);
+
             try {
                 queue.put(name + " " + text);
             } catch (InterruptedException e) {
@@ -167,7 +216,6 @@ public class Server extends AbstractVerticle {
             }
 
         }
-
     }
 
     private String getTweet() {

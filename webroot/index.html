@@ -20,18 +20,55 @@
     eb.onopen = function () {
         eb.registerHandler("webpage", function (err, msg) {
             //index of first space between twitter nickname and body text
+
             const index = msg.body.indexOf(" ");
-            $(function () {
-                new PNotify(
-                    {
-                        //twitter nick
-                        title: msg.body.substring(0, index),
-                        //body of post
-                        text: msg.body.substring(index, msg.body.length)
-                    });
-            });
+            if (msg.body.substring(0, index) === "error") {
+                //alert error
+                alert(msg.body.substring(index, msg.body.length));
+            }
+            else {
+                $(function () {
+                    new PNotify(
+                        {
+                            //twitter nick
+                            title: msg.body.substring(0, index),
+                            //body of post
+                            text: msg.body.substring(index, msg.body.length)
+                        });
+                });
+            }
         });
+    };
+
+    //for changing query
+    function sendQeury(event) {
+        if (event.keyCode === 13 || event.which === 13) {
+            var message = $('#input').val();
+            if (message.length > 0) {
+                eb.publish("server", "query " + message);
+                $('#input').val("");
+            }
+        }
     }
+
+    //for changing delay between messages
+    function sendDelay(event) {
+        if (event.keyCode === 13 || event.which === 13) {
+            var message = $('#input2').val();
+            if (message.length > 0) {
+                eb.publish("server", "delay " + message);
+                $('#input2').val("");
+            }
+        }
+    }
+
 </script>
+
+
+<p>Enter search query: </p>
+<input id="input" type="text" onkeydown="sendQeury(event)">
+
+<p>Enter delay in seconds between twitts appearance : </p>
+<input id="input2" type="text" onkeydown="sendDelay(event)">
 </body>
 </html>
