@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TwitterClient extends AbstractVerticle {
 
     //#TODO: replace this keys with yours
-    private String ConsumerKey = " 8nMPC288sJPil7GZIVotztTdL";
-    private String ConsumerSecret = "bHSPwXPjrGRhAdd33tOh4N09n4NFPJ2LmilInwdEXL7ERuh6PI";
+    private String ConsumerKey = "GXEDTBud9ocz2huhNvfCSfuNv";
+    private String ConsumerSecret = "SeX98khg7MBo5F6GhubK6qViNY4Injdih1D1QDUqjAZwiCim98";
 
     private String btoken = "";
 
@@ -133,7 +133,13 @@ public class TwitterClient extends AbstractVerticle {
 
 
     private String base64encode() {
-        String BearerTokenCredentials = ConsumerKey + ":" + ConsumerSecret;
+        String BearerTokenCredentials = null;
+        try {
+            BearerTokenCredentials = URLEncoder.encode( ConsumerKey,"UTF-8")
+                    + ":" + URLEncoder.encode(ConsumerSecret,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         return new String(Base64.getEncoder().encode(BearerTokenCredentials.getBytes()));
     }
 
