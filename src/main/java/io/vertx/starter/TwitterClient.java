@@ -14,7 +14,6 @@ import io.vertx.ext.web.client.WebClientOptions;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,10 +33,10 @@ public class TwitterClient extends AbstractVerticle {
     private Semaphore semaphore = new Semaphore(1);
 
 
-    private AtomicInteger reqCount = new AtomicInteger(480);
+    private AtomicInteger reqCount = new AtomicInteger(450);
 
     //last tie of reqCount refreshment
-    private AtomicLong lastTimeOfRefresh = new AtomicLong(System.currentTimeMillis());
+    private AtomicLong rateLimitReset = new AtomicLong(System.currentTimeMillis());
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
@@ -55,12 +54,6 @@ public class TwitterClient extends AbstractVerticle {
             if (btoken == null || btoken.equals("")) {
                 make_auth(wclient);
             }
-        });
-
-        //Twitter Search Api provide only 480 requests per 15 min
-        vertx.setPeriodic(15 * 60 * 1000, h -> {
-            reqCount.set(480);
-            lastTimeOfRefresh.set(System.currentTimeMillis());
         });
 
         EventBus eventBus = vertx.eventBus();
@@ -95,10 +88,8 @@ public class TwitterClient extends AbstractVerticle {
                         //send to consumer tweets
                         if (response.statusCode() == 200) {
                             MultiMap headers = response.headers();
-                            System.out.println("headers:");
-                            for (Map.Entry<String, String> header : headers) {
-                                System.out.println(header.getKey() + " : " + header.getValue());
-                            }
+                            rateLimitReset.set(Integer.parseInt(headers.get("x-rate-limit-reset")));
+                            reqCount.set(Integer.parseInt(headers.get("x-rate-limit-remaining")));
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
                             //force token to refresh
@@ -108,7 +99,6 @@ public class TwitterClient extends AbstractVerticle {
                         ar.cause().printStackTrace();
                     }
                     semaphore.release();
-                    reqestMade();
                 });
     }
 
@@ -148,7 +138,7 @@ public class TwitterClient extends AbstractVerticle {
         reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
-                ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis()) / 1000));
+                ((rateLimitReset.get() /* 1000 * 15 * 60*/ - System.currentTimeMillis()) / 1000));
     }
 
     private boolean ableToRequest() {
@@ -158,7 +148,7 @@ public class TwitterClient extends AbstractVerticle {
                     .publish("webpage",
                             "notice" +
                                     "Seconds to wait before refresh " +
-                                    ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis()) / 1000));
+                                    ((rateLimitReset.get() /* 1000 * 15 * 60*/ - System.currentTimeMillis()) / 1000));
 
         }
         return b;
