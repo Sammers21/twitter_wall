@@ -51,7 +51,7 @@ public class TwitterClient extends AbstractVerticle {
         );
 
         //for token refreshment
-        vertx.setPeriodic(5000, h -> {
+        vertx.setPeriodic(1000, h -> {
             if (btoken == null || btoken.equals("")) {
                 make_auth(wclient);
             }
@@ -64,9 +64,9 @@ public class TwitterClient extends AbstractVerticle {
 
             //if consumer ask for some tweets
             if (split[0].equals("provide")
-                    && semaphore.tryAcquire()
                     && ableToRequest()
-                    && !btoken.equals("")) {
+                    && !btoken.equals("")
+                    && semaphore.tryAcquire()) {
                 provideToConsumer(wclient, eventBus);
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
@@ -92,6 +92,7 @@ public class TwitterClient extends AbstractVerticle {
                             MultiMap headers = response.headers();
                             /*rateLimitReset.set(Long.parseLong(headers.get("x-rate-limit-reset:")));
                             reqCount.set(Integer.parseInt(headers.get("x-rate-limit-remaining")));*/
+                            System.out.println("getted ");
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
                             //force token to refresh
@@ -142,7 +143,6 @@ public class TwitterClient extends AbstractVerticle {
     }
 
     private void reqInfo() {
-        reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
                 ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
