@@ -34,6 +34,17 @@
                         });
                 });
             }
+            else  if (msg.body.substring(0, index) === "notice") {
+                //alert error
+                $(function () {
+                    new PNotify(
+                        {
+                            title: "No tweet anymore",
+                            //body of error
+                            text: msg.body.substring(index, msg.body.length)
+                        });
+                });
+            }
             else {
                 $(function () {
                     new PNotify(

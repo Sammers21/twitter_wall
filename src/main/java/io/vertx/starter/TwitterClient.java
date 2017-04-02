@@ -6,13 +6,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.PermittedOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -73,7 +69,7 @@ public class TwitterClient extends AbstractVerticle {
             //if consumer ask for some tweets
             if (split[0].equals("provide")
                     && semaphore.tryAcquire()
-                    && ableToReqest()) {
+                    && ableToRequest()) {
                 provideToConsumer(wclient, eventBus);
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
@@ -148,8 +144,17 @@ public class TwitterClient extends AbstractVerticle {
                 ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis()) / 1000));
     }
 
-    private boolean ableToReqest() {
-        return reqCount.get() > 0;
+    private boolean ableToRequest() {
+        boolean b = reqCount.get() > 0;
+        if (!b) {
+            vertx.eventBus()
+                    .publish("webpage",
+                            "notice" +
+                                    "Seconds to wait before refresh " +
+                                    ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis()) / 1000));
+
+        }
+        return b;
     }
 
     private String encodedQuery() {
