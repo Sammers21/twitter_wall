@@ -98,6 +98,7 @@ public class TwitterClient extends AbstractVerticle {
                     } else {
                         ar.cause().printStackTrace();
                     }
+                    reqInfo();
                     semaphore.release();
                 });
     }
@@ -124,7 +125,7 @@ public class TwitterClient extends AbstractVerticle {
                     } else {
                         ar.cause().printStackTrace();
                     }
-                    reqestMade();
+                    reqInfo();
                 });
     }
 
@@ -134,11 +135,11 @@ public class TwitterClient extends AbstractVerticle {
         return new String(Base64.getEncoder().encode(BearerTokenCredentials.getBytes()));
     }
 
-    private void reqestMade() {
+    private void reqInfo() {
         reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
-                ((rateLimitReset.get() /* 1000 * 15 * 60*/ - System.currentTimeMillis()) / 1000));
+                ((rateLimitReset.get()  - System.currentTimeMillis()) / 1000));
     }
 
     private boolean ableToRequest() {
@@ -148,7 +149,7 @@ public class TwitterClient extends AbstractVerticle {
                     .publish("webpage",
                             "notice" +
                                     "Seconds to wait before refresh " +
-                                    ((rateLimitReset.get() /* 1000 * 15 * 60*/ - System.currentTimeMillis()) / 1000));
+                                    ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
 
         }
         return b;
