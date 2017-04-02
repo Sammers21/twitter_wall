@@ -24,6 +24,8 @@ public class TweetConsumer extends AbstractVerticle {
     //delay between two tweets
     private AtomicInteger delay = new AtomicInteger(5000);
 
+    //Id of time that send messages with some delay
+    //used when need to change delay
     private AtomicLong timerId = new AtomicLong(0);
 
     @Override

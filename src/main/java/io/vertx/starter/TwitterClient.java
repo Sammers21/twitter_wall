@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterClient extends AbstractVerticle {
 
+    //Note: replace this keys by your ones
     private String ConsumerKey = "DX6ptkrAXL8iZv92IBNurhmm9";
     private String ConsumerSecret = "J1o1oTK5muKoDLYOw26Awcd0krZhjGaVFaC0ioKIpSoaoxyI2L";
 
@@ -36,6 +37,7 @@ public class TwitterClient extends AbstractVerticle {
 
     private AtomicInteger reqCount = new AtomicInteger(480);
 
+    //last tie of reqCount refreshment
     private AtomicLong lastTimeOfRefresh = new AtomicLong(System.currentTimeMillis());
 
     @Override
@@ -137,14 +139,14 @@ public class TwitterClient extends AbstractVerticle {
         return new String(Base64.getEncoder().encode(BearerTokenCredentials.getBytes()));
     }
 
-    void reqestMade() {
+    private void reqestMade() {
         reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
-                ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis() / 1000)));
+                ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis()) / 1000));
     }
 
-    boolean ableToReqest() {
+    private boolean ableToReqest() {
         return reqCount.get() > 0;
     }
 
