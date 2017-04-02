@@ -16,7 +16,7 @@
 <body>
 
 <script type="text/javascript">
-    var eb = new EventBus("/eventbus/");
+    var eb = new EventBus("http://localhost:8080/eventbus");
     eb.onopen = function () {
         eb.registerHandler("webpage", function (err, msg) {
             //index of first space between twitter nickname and body text
@@ -69,6 +69,6 @@
 <input id="input" type="text" onkeydown="sendQeury(event)">
 
 <p>Enter delay in seconds between twitts appearance : </p>
-<input id="input2" type="text" onkeydown="sendDelay(event)">
+<label for="input2">label2</label><input id="input2" type="text" onkeydown="sendDelay(event)">
 </body>
 </html>
