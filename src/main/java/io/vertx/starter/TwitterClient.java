@@ -90,7 +90,7 @@ public class TwitterClient extends AbstractVerticle {
                         //send to consumer tweets
                         if (response.statusCode() == 200) {
                             MultiMap headers = response.headers();
-                            rateLimitReset.set(Long.parseLong(headers.get("X-Rate-Limit-Reset:")));
+                            rateLimitReset.set(Long.parseLong(headers.get("x-rate-limit-reset:")));
                             reqCount.set(Integer.parseInt(headers.get("x-rate-limit-remaining")));
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
