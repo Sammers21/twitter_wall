@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TwitterClient extends AbstractVerticle {
 
     //#TODO: replace this keys with yours
-    private String ConsumerKey = "DX6ptkrAXL8iZv92IBNurhmm9";
-    private String ConsumerSecret = "J1o1oTK5muKoDLYOw26Awcd0krZhjGaVFaC0ioKIpSoaoxyI2L";
+    private String ConsumerKey = " 8nMPC288sJPil7GZIVotztTdL";
+    private String ConsumerSecret = "bHSPwXPjrGRhAdd33tOh4N09n4NFPJ2LmilInwdEXL7ERuh6PI";
 
     private String btoken = "";
 
