@@ -18,6 +18,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterClient extends AbstractVerticle {
 
@@ -32,14 +34,18 @@ public class TwitterClient extends AbstractVerticle {
     //to prevent big amount of unexpected requests
     private Semaphore semaphore = new Semaphore(1);
 
+    private AtomicInteger reqCount = new AtomicInteger(480);
+
+    private AtomicLong lastTimeOfRefresh = new AtomicLong(System.currentTimeMillis());
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
+
+        //SockJS bridge
         Router router = Router.router(vertx);
         BridgeOptions opts = new BridgeOptions()
                 .addInboundPermitted(new PermittedOptions().setAddress("to.twitter.client"));
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
-
         router.route("/eventbus/*").handler(ebHandler);
 
         WebClient wclient = WebClient.create(vertx,
@@ -56,13 +62,21 @@ public class TwitterClient extends AbstractVerticle {
             }
         });
 
+        //Twitter Search Api provide only 480 requests per 15 min
+        vertx.setPeriodic(15 * 60 * 1000, h -> {
+            reqCount.set(480);
+            lastTimeOfRefresh.set(System.currentTimeMillis());
+        });
+
         EventBus eventBus = vertx.eventBus();
 
         eventBus.consumer("to.twitter.client", h -> {
             String[] split = h.body().toString().split(" ");
 
             //if consumer ask for some tweets
-            if (split[0].equals("provide") && semaphore.tryAcquire()) {
+            if (split[0].equals("provide")
+                    && semaphore.tryAcquire()
+                    && ableToReqest()) {
                 provideToConsumer(wclient, eventBus);
                 //or if message is about search query update
             } else if (split[0].equals("query")) {
@@ -93,6 +107,7 @@ public class TwitterClient extends AbstractVerticle {
                         ar.cause().printStackTrace();
                     }
                     semaphore.release();
+                    reqestMade();
                 });
     }
 
@@ -118,6 +133,7 @@ public class TwitterClient extends AbstractVerticle {
                     } else {
                         ar.cause().printStackTrace();
                     }
+                    reqestMade();
                 });
     }
 
@@ -125,6 +141,17 @@ public class TwitterClient extends AbstractVerticle {
     private String base64encode() {
         String BearerTokenCredentials = ConsumerKey + ":" + ConsumerSecret;
         return new String(Base64.getEncoder().encode(BearerTokenCredentials.getBytes()));
+    }
+
+    void reqestMade() {
+        reqCount.decrementAndGet();
+        System.out.println("requests remained " + reqCount.get());
+        System.out.println("Seconds to wait before refresh " +
+                (lastTimeOfRefresh.get() + 1000 * 15 * 60 + System.currentTimeMillis()) / 1000);
+    }
+
+    boolean ableToReqest() {
+        return reqCount.get() > 0;
     }
 
     private String encodedQuery() {
