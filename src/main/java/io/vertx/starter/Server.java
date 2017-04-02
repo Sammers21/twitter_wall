@@ -25,9 +25,14 @@ public class Server extends AbstractVerticle {
 
         //SockJS bridge
         Router router = Router.router(vertx);
+
+        PermittedOptions optclient = new PermittedOptions().setAddress("to.twitter.client");
+        optclient.setRequiredAuthority(null);
+        PermittedOptions optdelay = new PermittedOptions().setAddress("to.consumer.delay");
+        optdelay.setRequiredAuthority(null);
         BridgeOptions opts = new BridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"))
-                .addInboundPermitted(new PermittedOptions().setAddress("to.twitter.client"))
+                .addInboundPermitted(optdelay)
+                .addInboundPermitted(optclient)
                 .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
 
         SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
