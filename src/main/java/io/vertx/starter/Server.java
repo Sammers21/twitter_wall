@@ -14,12 +14,9 @@ public class Server extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
-        vertx.setTimer(1000, h -> {
-            deploy(TwitterClient.class.getCanonicalName());
-        });
-        vertx.setTimer(2000, h -> {
-            deploy(TweetConsumer.class.getCanonicalName());
-        });
+        deploy(TwitterClient.class.getCanonicalName());
+        deploy(TweetConsumer.class.getCanonicalName());
+
 
         EventBus eb = vertx.eventBus();
 
@@ -39,14 +36,6 @@ public class Server extends AbstractVerticle {
 
         // Create a router endpoint for the static content.
         router.route().handler(StaticHandler.create());
-
-        eb.consumer("to.twitter.client", h -> {
-            System.out.println("to.twitter.client body is " + h.body());
-        });
-        eb.consumer("to.consumer.delay", h -> {
-            System.out.println("to.twitter.client body " + h.body());
-        });
-
 
         // Start the web server and tell it to use the router to handle requests.
         vertx.createHttpServer().requestHandler(router::accept).listen(8080);
