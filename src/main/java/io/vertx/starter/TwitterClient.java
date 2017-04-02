@@ -139,7 +139,7 @@ public class TwitterClient extends AbstractVerticle {
         reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
-                ((rateLimitReset.get()  - System.currentTimeMillis()) / 1000));
+                ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
     }
 
     private boolean ableToRequest() {
@@ -147,9 +147,9 @@ public class TwitterClient extends AbstractVerticle {
         if (!b) {
             vertx.eventBus()
                     .publish("webpage",
-                            "notice" +
+                            "notice " +
                                     "Seconds to wait before refresh " +
-                                    ((rateLimitReset.get() - System.currentTimeMillis()) / 1000));
+                                    ((rateLimitReset.get() * 1000 - System.currentTimeMillis()) / 1000));
 
         }
         return b;
