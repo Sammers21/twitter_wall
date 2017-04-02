@@ -30,14 +30,6 @@ public class TweetConsumer extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         EventBus eventBus = vertx.eventBus();
 
-        //SockJS bridge
-        Router router = Router.router(vertx);
-        BridgeOptions opts = new BridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"))
-                .addOutboundPermitted(new PermittedOptions().setAddress("webpage"));
-        SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
-        router.route("/eventbus/*").handler(ebHandler);
-
         //channel to receive Tweets in JSON
         eventBus.consumer("to.consumer.JSON", h -> {
             JsonObject jsonObject = (JsonObject) h.body();

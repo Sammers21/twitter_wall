@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterClient extends AbstractVerticle {
 
-    private String ConsumerKey = "8nMPC288sJPil7GZIVotztTdL";
-    private String ConsumerSecret = "bHSPwXPjrGRhAdd33tOh4N09n4NFPJ2LmilInwdEXL7ERuh6PI";
+    private String ConsumerKey = "DX6ptkrAXL8iZv92IBNurhmm9";
+    private String ConsumerSecret = "J1o1oTK5muKoDLYOw26Awcd0krZhjGaVFaC0ioKIpSoaoxyI2L";
 
     private String btoken = "";
 
@@ -41,12 +41,6 @@ public class TwitterClient extends AbstractVerticle {
     @Override
     public void start(Future<Void> startFuture) throws Exception {
 
-        //SockJS bridge
-        Router router = Router.router(vertx);
-        BridgeOptions opts = new BridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddress("to.twitter.client"));
-        SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
-        router.route("/eventbus/*").handler(ebHandler);
 
         WebClient wclient = WebClient.create(vertx,
                 new WebClientOptions()
@@ -147,7 +141,7 @@ public class TwitterClient extends AbstractVerticle {
         reqCount.decrementAndGet();
         System.out.println("requests remained " + reqCount.get());
         System.out.println("Seconds to wait before refresh " +
-                (lastTimeOfRefresh.get() + 1000 * 15 * 60 + System.currentTimeMillis()) / 1000);
+                ((lastTimeOfRefresh.get() + 1000 * 15 * 60 - System.currentTimeMillis() / 1000)));
     }
 
     boolean ableToReqest() {
