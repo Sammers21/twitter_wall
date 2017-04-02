@@ -14,6 +14,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -88,7 +89,10 @@ public class TwitterClient extends AbstractVerticle {
                         //send to consumer tweets
                         if (response.statusCode() == 200) {
                             MultiMap headers = response.headers();
-                            rateLimitReset.set(Integer.parseInt(headers.get("x-rate-limit-reset")));
+                            for (Map.Entry<String, String> header : headers) {
+                                System.out.println(header.getKey() + " : " + header.getValue());
+                            }
+                            rateLimitReset.set(Integer.parseInt(headers.get("X-Rate-Limit-Reset:")));
                             reqCount.set(Integer.parseInt(headers.get("x-rate-limit-remaining")));
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
