@@ -4,6 +4,7 @@ package io.vertx.starter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.client.HttpResponse;
@@ -13,6 +14,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -92,6 +94,11 @@ public class TwitterClient extends AbstractVerticle {
                         System.out.println("Got HTTP response with status " + response.statusCode());
                         //send to consumer tweets
                         if (response.statusCode() == 200) {
+                            MultiMap headers = response.headers();
+                            System.out.println("headers:");
+                            for (Map.Entry<String, String> header : headers) {
+                                System.out.println(header.getKey() + " : " + header.getValue());
+                            }
                             eventBus.publish("to.consumer.JSON", response.bodyAsJsonObject());
                         } else {
                             //force token to refresh
