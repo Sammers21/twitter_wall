@@ -6,6 +6,10 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,12 +30,21 @@ public class TweetConsumer extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         EventBus eventBus = vertx.eventBus();
 
+        //SockJS bridge
+        Router router = Router.router(vertx);
+        BridgeOptions opts = new BridgeOptions()
+                .addInboundPermitted(new PermittedOptions().setAddress("to.consumer.delay"));
+        SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
+
+        router.route("/eventbus/*").handler(ebHandler);
+
         eventBus.consumer("to.consumer.JSON", h -> {
             JsonObject jsonObject = (JsonObject) h.body();
             publishMessagesIntoQueue(jsonObject);
         });
 
         eventBus.consumer("to.consumer.delay", h -> {
+            System.out.println("to.consumer.delay message " + h.body().toString());
             int i = Integer.parseInt(h.body().toString());
             if (i > 0) {
                 delay.set(i * 1000);
@@ -54,6 +67,7 @@ public class TweetConsumer extends AbstractVerticle {
             if (q.size() < 5) {
                 eventBus.publish("to.twitter.client", "provide tweets");
             } else {
+                System.out.println(" sended:" + q.peek());
                 eventBus.publish("webpage", q.poll());
             }
         }));
